@@ -20,7 +20,7 @@ describe('AppController (e2e)', () => {
     prisma = app.get(PrismaService)
     await prisma.media.deleteMany()
     await prisma.post.deleteMany()
-
+    await prisma.publication.deleteMany()
     await app.init();
   });
 
@@ -96,7 +96,7 @@ describe('AppController (e2e)', () => {
           username: "Test username"
         }
       });
-      
+
       const media = await request(app.getHttpServer())
         .get(`/medias/${creator.id}`)
         .expect(HttpStatus.OK);
@@ -130,11 +130,11 @@ describe('AppController (e2e)', () => {
         })
         .expect(HttpStatus.OK);
 
-        expect(update.body).toEqual({
-          id: creator.id,
-          title: "title updated",
-          username: "username updated"
-        });
+      expect(update.body).toEqual({
+        id: creator.id,
+        title: "title updated",
+        username: "username updated"
+      });
     });
     it('PUT /medias/:id => Should respond with status 404 when media is not found', async () => {
       await request(app.getHttpServer())
@@ -158,7 +158,7 @@ describe('AppController (e2e)', () => {
           username: "username"
         }
       });
-      
+
       await request(app.getHttpServer())
         .put(`/medias/${creator.id}`)
         .send({
@@ -246,7 +246,7 @@ describe('AppController (e2e)', () => {
           text: "Test text"
         }
       });
-      
+
       const post = await request(app.getHttpServer())
         .get(`/posts/${creator.id}`)
         .expect(HttpStatus.OK);
@@ -280,12 +280,12 @@ describe('AppController (e2e)', () => {
         })
         .expect(HttpStatus.OK);
 
-        expect(update.body).toEqual({
-          id: creator.id,
-          title: "title updated",
-          text: "text updated",
-          image: null,
-        });
+      expect(update.body).toEqual({
+        id: creator.id,
+        title: "title updated",
+        text: "text updated",
+        image: null,
+      });
     });
     it('PUT /posts/:id => Should respond with status 404 when post is not found', async () => {
       await request(app.getHttpServer())
@@ -310,5 +310,61 @@ describe('AppController (e2e)', () => {
         .delete(`/posts/${creator.id + 20}`)
         .expect(HttpStatus.NOT_FOUND);
     })
+  })
+
+  describe('PublicationsController (e2e)', () => {
+    it('POST /publications => should respond with status 200 if created a publication succesfully', async () => {
+      const media = await prisma.media.create({
+        data: {
+          title: "test",
+          username: "test",
+        }
+      });
+      const post = await prisma.post.create({
+        data: {
+          title: "Test title",
+          text: "Test text"
+        }
+      });
+
+      await request(app.getHttpServer())
+        .post('/publications')
+        .send({
+          mediaId: media.id,
+          postId: post.id,
+          date: '2023-08-21T13:25:17.352Z'
+        })
+        .expect(HttpStatus.OK)
+
+      
+      const publication = await prisma.publication.findFirst({
+        where: {
+          mediaId: media.id,
+          postId: post.id
+        }
+      })
+
+      expect(publication).not.toBe(null)
+    });
+    it('POST /publications => should respond with status 400 if body is invalid', async () => {
+      await request(app.getHttpServer())
+        .post('/publications')
+        .send({
+          mediaId: 1
+        })
+        .expect(HttpStatus.BAD_REQUEST)
+    });
+    it('POST /publications => should respond with status 404 if media and post no exist', async () => {
+      await request(app.getHttpServer())
+        .post('/publications')
+        .send({
+          mediaId: 999,
+          postId: 999,
+          date: '2023-08-21T13:25:17.352Z'
+        })
+        .expect(HttpStatus.NOT_FOUND)
+    });
+
+
   })
 });
