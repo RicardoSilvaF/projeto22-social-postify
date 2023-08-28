@@ -24,4 +24,12 @@ export class MediasRepository {
     async getMedias() {
         return this.prisma.media.findMany()
     }
+
+    async getMediaById(id: number) {
+        return this.prisma.media.findFirst({
+            where: {
+                id: id
+            }
+        });
+    }
 }
