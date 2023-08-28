@@ -8,17 +8,11 @@ export class MediasRepository {
     constructor(private readonly prisma: PrismaService) { }
 
     async postMedias(body: MediaDto) {
-        const mediaRepeated = await this.prisma.media.findFirst({
-            where: { title: body.title, username: body.username }
-        })
-        if (mediaRepeated) {
-            throw new HttpException("Conflict", HttpStatus.CONFLICT)
-        }
-        else {
+        
             return this.prisma.media.create({
                 data: body
             })
-        }
+        
     }
 
     async getMedias() {
@@ -31,5 +25,26 @@ export class MediasRepository {
                 id: id
             }
         });
+    }
+
+    async updateMediaById(id: number, body: MediaDto) {
+        return await this.prisma.media.update({
+            where: {
+                id
+            },
+            data: {
+                title: body.title,
+                username: body.username
+            }
+        });
+    }
+
+    async mediaFind(body: MediaDto) {
+        const mediaRepeated = await this.prisma.media.findFirst({
+            where: { title: body.title, username: body.username }
+        })
+        if (mediaRepeated) {
+            throw new HttpException("CONFLICT", HttpStatus.CONFLICT)
+        }
     }
 }

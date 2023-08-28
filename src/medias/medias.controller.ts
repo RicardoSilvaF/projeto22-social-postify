@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { MediasService } from './medias.service';
 import { MediaDto } from './dtos/media.dto';
 
@@ -21,5 +21,10 @@ export class MediasController {
     @Get(':id')
     async getMediaById(@Param('id', ParseIntPipe) id: number) {
         return await this.mediasService.getMediaById(id);
+    }
+
+    @Put(':id')
+    async updateMediaById(@Param('id', ParseIntPipe) id: number, @Body() body: MediaDto) {
+        return await this.mediasService.updateMediaById(id, body);
     }
 }

@@ -4,9 +4,10 @@ import { MediasRepository } from './medias.repository';
 
 @Injectable()
 export class MediasService {
-    constructor(private readonly repository: MediasRepository) {}
+    constructor(private readonly repository: MediasRepository) { }
 
     async postMedias(body: MediaDto) {
+        await this.repository.mediaFind(body)
         return await this.repository.postMedias(body)
     }
 
@@ -16,11 +17,20 @@ export class MediasService {
 
     async getMediaById(id: number) {
         const mediaFiltered = await this.repository.getMediaById(id)
-        if(!mediaFiltered){
-            throw new HttpException("NOT FOUND",HttpStatus.NOT_FOUND)
+        if (!mediaFiltered) {
+            throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND)
         }
-        else{
+        else {
             return mediaFiltered;
         }
+    }
+
+    async updateMediaById(id: number, body: MediaDto) {
+        const mediaFiltered = await this.repository.getMediaById(id)
+        if (!mediaFiltered) {
+            throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND)
+        }
+        await this.repository.mediaFind(body)
+        return await this.repository.updateMediaById(id, body);
     }
 }
