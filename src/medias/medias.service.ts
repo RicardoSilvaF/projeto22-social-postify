@@ -7,7 +7,7 @@ export class MediasService {
     constructor(private readonly repository: MediasRepository) { }
 
     async postMedias(body: MediaDto) {
-        await this.repository.mediaFind(body)
+        await this.repository.mediaFindRepeateds(body)
         return await this.repository.postMedias(body)
     }
 
@@ -26,11 +26,18 @@ export class MediasService {
     }
 
     async updateMediaById(id: number, body: MediaDto) {
-        const mediaFiltered = await this.repository.getMediaById(id)
-        if (!mediaFiltered) {
-            throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND)
-        }
-        await this.repository.mediaFind(body)
+      //  const mediaFiltered = await this.repository.getMediaById(id)
+       // if (!mediaFiltered) {
+      //      throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND)
+      //  }
+        await this.repository.mediaFind(id)
+        await this.repository.mediaFindRepeateds(body)
         return await this.repository.updateMediaById(id, body);
+    }
+
+    async deleteMediaById(id: number) {
+        await this.repository.mediaFind(id)
+        // await publication repository find by id
+        return await this.repository.deleteMediaById(id)
     }
 }
