@@ -19,6 +19,7 @@ describe('AppController (e2e)', () => {
 
     prisma = app.get(PrismaService)
     await prisma.media.deleteMany()
+    await prisma.post.deleteMany()
 
     await app.init();
   });
@@ -195,4 +196,119 @@ describe('AppController (e2e)', () => {
 
   })
 
+  describe('PostsController (e2e)', () => {
+    it('POST /posts => should respond with status 200 if created a post succesfully', async () => {
+      await request(app.getHttpServer())
+        .post('/posts')
+        .send({
+          title: "test title",
+          text: "test text",
+        })
+        .expect(HttpStatus.OK)
+
+      const post = await prisma.post.findFirst({
+        where: {
+          title: "test title",
+          text: "test text"
+        }
+      })
+
+      expect(post).not.toBe(null)
+    });
+    it('POST /posts => should respond with status 400 if body is invalid', async () => {
+      await request(app.getHttpServer())
+        .post('/posts')
+        .send({
+          title: "test title"
+        })
+        .expect(HttpStatus.BAD_REQUEST)
+    });
+
+
+    it('GET /posts => should respond with status 200 if returned a post succesfully', async () => {
+      await prisma.post.create({
+        data: {
+          title: "Test title",
+          text: "Test text"
+        }
+      });
+
+      const postList = await request(app.getHttpServer()).get('/posts')
+      expect(postList.statusCode).toBe(HttpStatus.OK)
+      expect(postList.body).toHaveLength(1);
+    });
+
+
+    it('GET /posts/:id => Should respond with status 200 if get the post succesfully', async () => {
+      const creator = await prisma.post.create({
+        data: {
+          title: "Test title",
+          text: "Test text"
+        }
+      });
+      
+      const post = await request(app.getHttpServer())
+        .get(`/posts/${creator.id}`)
+        .expect(HttpStatus.OK);
+
+      expect(post.body).toEqual({
+        id: creator.id,
+        title: "Test title",
+        text: "Test text"
+      });
+    });
+    it('GET /posts/:id => Should respond with status 404 when post is not found', async () => {
+      await request(app.getHttpServer())
+        .get('/posts/9')
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+
+    it('PUT /posts/:id => Should respond with status 200 if updated succesfully', async () => {
+      const creator = await prisma.post.create({
+        data: {
+          title: "Test title",
+          text: "Test text"
+        }
+      });
+
+      const update = await request(app.getHttpServer())
+        .put(`/posts/${creator.id}`)
+        .send({
+          title: "title updated",
+          text: "text updated",
+        })
+        .expect(HttpStatus.OK);
+
+        expect(update.body).toEqual({
+          id: creator.id,
+          title: "title updated",
+          text: "text updated",
+          image: null,
+        });
+    });
+    it('PUT /posts/:id => Should respond with status 404 when post is not found', async () => {
+      await request(app.getHttpServer())
+        .put('/posts/9')
+        .send({
+          title: "title",
+          text: "text",
+        })
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+
+    it('DELETE /posts/:id => Should respond with status 404 if post is not found', async () => {
+      const creator = await prisma.post.create({
+        data: {
+          title: "Test title",
+          text: "Test text"
+        }
+      });
+
+      await request(app.getHttpServer())
+        .delete(`/posts/${creator.id + 20}`)
+        .expect(HttpStatus.NOT_FOUND);
+    })
+  })
 });
