@@ -26,3 +26,12 @@ model Post {
 
   @@map("posts")
 }
+
+model Publication {
+  id Int @id @default(autoincrement())
+  mediaId Int
+  postId Int
+  date DateTime
+
+  @@map("publications")
+}
