@@ -26,13 +26,13 @@ export class MediasService {
     }
 
     async updateMediaById(id: number, body: MediaDto) {
-      //  const mediaFiltered = await this.repository.getMediaById(id)
-       // if (!mediaFiltered) {
-      //      throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND)
-      //  }
         await this.repository.mediaFind(id)
         await this.repository.mediaFindRepeateds(body)
-        return await this.repository.updateMediaById(id, body);
+        const updated = await this.repository.updateMediaById(id, body);
+        if(!updated){
+            throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND)
+        }
+        return updated
     }
 
     async deleteMediaById(id: number) {
