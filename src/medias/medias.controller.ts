@@ -9,7 +9,6 @@ export class MediasController {
 
     @Post()
     @HttpCode(HttpStatus.OK)
-    @UsePipes(ValidationPipe)
     async postMedias(@Body() body: MediaDto) {
         return await this.mediasService.postMedias(body);
     }
